@@ -1,9 +1,18 @@
+using Webhooks.Api.Repositories;
+using Webhooks.Api.DTO;
+using Webhooks.Api.Models;
+using Microsoft.AspNetCore.Mvc;
+using Webhooks.Api.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<InMemoryStudentRepository>();  //REgister all services like this, or error while accessing EP
+builder.Services.AddSingleton<InMemoryWebhookSubscriptionRepository>();
+builder.Services.AddHttpClient<WebhookDispatcher>();
 
 var app = builder.Build();
 
@@ -16,29 +25,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapPost("/students", ([FromBody] RegisterStudentRequest request, [FromServices] InMemoryStudentRepository studentRepository, WebhookDispatcher webhookDispatcher) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var student = new Student() { Id= Guid.NewGuid(), Name=request.Name, Grade=request.Grade};
+    studentRepository.Add(student);
+    webhookDispatcher.Dispatch("student.created", student);
+    return Results.Ok(student);
 })
-.WithName("GetWeatherForecast")
+.WithName("Student")
 .WithOpenApi();
+
+app.MapGet("/students", (InMemoryStudentRepository studentRepository) => {
+    return studentRepository.GetAll();
+}).WithTags("Students");
+
+app.MapPost("/webhooks/subscriptions", ([FromBody] CreateWebhookRequest request, [FromServices]InMemoryWebhookSubscriptionRepository webhookRepository) => {
+    WebhookSubscription subscription = new WebhookSubscription() { Id = Guid.NewGuid(), EventType= request.EventType, CreatedAt=DateTime.Now, WebhookUrl = request.WebhookUrl };
+    return Results.Ok(subscription);
+});
 
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
