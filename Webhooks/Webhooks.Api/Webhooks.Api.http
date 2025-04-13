@@ -1,6 +1,26 @@
-@Webhooks.Api_HostAddress = http://localhost:5226
+@Webhooks.Api_HostAddress = https://localhost:7105
 
-GET {{Webhooks.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Create Student
 
-###
+### Create Subscription 
+POST https://localhost:7105/webhooks/subscriptions
+Content-Type: application/json
+{
+  "eventType" : "student.created",
+  "webhookUrl" : "https://webhook.site/f00fc353-548f-466f-85aa-4762732f8052"
+}
+
+### Create/Register Student
+POST https://localhost:7105/students
+Content-Type: application/json
+{
+  "Name": "Rachel",
+  "Grade": "1"
+}
+
+### Get all students request
+GET https://localhost:7105/students
+Content-Type: application/json
+
+### Get all webhook subscriptions
+GET https://localhost:7105/webhooks/subscriptions

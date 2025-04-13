@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webhooks.Api", "Webhooks.Api\Webhooks.Api.csproj", "{B6AB6397-F38C-4AA5-9FFB-EAF533D2F963}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webhooks.Api", "Webhooks.Api\Webhooks.Api.csproj", "{B6AB6397-F38C-4AA5-9FFB-EAF533D2F963}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspire", "Aspire", "{5C217F01-5941-4B2E-ABCD-FB1E76E796E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webhooks.AppHost", "Webhooks.AppHost\Webhooks.AppHost.csproj", "{F83D53AE-30B8-45F9-ABBE-3FF2983BE048}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webhooks.ServiceDefaults", "Webhooks.ServiceDefaults\Webhooks.ServiceDefaults.csproj", "{77EE6B29-1A4E-4D73-81DC-F3630150D98B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,21 @@ Global
 		{B6AB6397-F38C-4AA5-9FFB-EAF533D2F963}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6AB6397-F38C-4AA5-9FFB-EAF533D2F963}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6AB6397-F38C-4AA5-9FFB-EAF533D2F963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F83D53AE-30B8-45F9-ABBE-3FF2983BE048}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F83D53AE-30B8-45F9-ABBE-3FF2983BE048}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F83D53AE-30B8-45F9-ABBE-3FF2983BE048}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F83D53AE-30B8-45F9-ABBE-3FF2983BE048}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77EE6B29-1A4E-4D73-81DC-F3630150D98B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77EE6B29-1A4E-4D73-81DC-F3630150D98B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77EE6B29-1A4E-4D73-81DC-F3630150D98B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77EE6B29-1A4E-4D73-81DC-F3630150D98B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F83D53AE-30B8-45F9-ABBE-3FF2983BE048} = {5C217F01-5941-4B2E-ABCD-FB1E76E796E1}
+		{77EE6B29-1A4E-4D73-81DC-F3630150D98B} = {5C217F01-5941-4B2E-ABCD-FB1E76E796E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {31191B1F-A4DC-44B5-AFB6-6A404FB5CA99}

@@ -5,3 +5,9 @@
 /.vs
 /Webhooks/.vs/Webhooks
 /Webhooks/Webhooks.Api/obj
+/Webhooks/Webhooks.Api/bin/Debug/net8.0
+/Webhooks/Webhooks.AppHost/bin/Debug/net8.0
+/Webhooks/Webhooks.AppHost/obj
+/Webhooks/.vs/ProjectEvaluation
+/Webhooks/Webhooks.ServiceDefaults/bin/Debug/net8.0
+/Webhooks/Webhooks.ServiceDefaults/obj
