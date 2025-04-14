@@ -16,7 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Webhooks.Api\Webhooks.Api.csproj" />
+    <ProjectReference Include="..\Webhooks.Api\Webhooks.Api.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
     
 </Project>

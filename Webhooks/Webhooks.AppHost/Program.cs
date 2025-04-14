@@ -1,3 +1,5 @@
+
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var database = builder.AddPostgres("postgres")
@@ -5,6 +7,6 @@ var database = builder.AddPostgres("postgres")
     .WithPgAdmin()
     .AddDatabase("webhooks");
 
-builder.AddProject<Projects.Webhooks_Api>("webhooks-api");
+builder.AddProject<Projects.Webhooks_Api>("webhooks-api").WithReference(database);
 
 builder.Build().Run();

@@ -32,7 +32,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    await app.ApplyMigrationsAsync(); //User defined Extension method for the app (Webapplication class) defind in \Extensions folder
+    await app.ApplyMigrationsWithRetryAsync(); //User defined Extension method for the app (Webapplication class) defind in \Extensions folder
 }
 
 app.UseHttpsRedirection();
