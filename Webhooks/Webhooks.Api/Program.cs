@@ -17,7 +17,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //builder.Services.AddSingleton<InMemoryStudentRepository>();  //REgister all services like this, or error while accessing EP
 //builder.Services.AddSingleton<InMemoryWebhookSubscriptionRepository>();
-builder.Services.AddHttpClient<WebhookDispatcher>();
+//builder.Services.AddHttpClient<WebhookDispatcher>();  //call this when httpclient is needed as DI instead of httpclientfactory
+
+builder.Services.AddScoped<WebhookDispatcher>(); 
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext<WebhookDbcontext>(options => {
     options.UseNpgsql(builder.Configuration.GetConnectionString("webhooks"));
 });
@@ -42,10 +45,11 @@ app.MapPost("/students", ([FromBody] RegisterStudentRequest request, [FromServic
     var student = new Student() { Id= Guid.NewGuid(), Name=request.Name, Grade=request.Grade};
     //studentRepository.Add(student);
     dbContext.students.Add(student);
-    webhookDispatcher.Dispatch("student.created", student);
+    //webhookDispatcher.Dispatch<Student>("student.created", student);
+    webhookDispatcher.DispatchAsync<Student>("student.created", student);
     return Results.Ok(student);
 })
-.WithName("Student")
+.WithName("StudentRegister")
 .WithOpenApi();
 
 app.MapGet("/students", (WebhookDbcontext dbContext) => {
@@ -54,9 +58,10 @@ app.MapGet("/students", (WebhookDbcontext dbContext) => {
 }).WithTags("Students");
 
 app.MapPost("/webhooks/subscriptions", ([FromBody] CreateWebhookRequest request, [FromServices] WebhookDbcontext dbContext) => {
-    WebhookSubscription subscription = new WebhookSubscription() { Id = Guid.NewGuid(), EventType= request.EventType, CreatedAt=DateTime.Now, WebhookUrl = request.WebhookUrl };
+    WebhookSubscription subscription = new WebhookSubscription() { Id = Guid.NewGuid(), EventType= request.EventType, CreatedAt=DateTime.UtcNow, WebhookUrl = request.WebhookUrl };
     //webhookRepository.Add(subscription);
     dbContext.subscriptions.Add(subscription);
+    dbContext.SaveChanges();
     return Results.Ok(subscription);
 });
 

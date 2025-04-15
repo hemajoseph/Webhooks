@@ -6,33 +6,86 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Webhooks.Api.Services
 {
-    public class WebhookDispatcher
+    public class WebhookDispatcher(IHttpClientFactory httpClientFactory, WebhookDbcontext dbContext)
     {
         //InMemoryWebhookSubscriptionRepository _subscriptionRepository;
         //HttpClient _httpClient;
 
-        WebhookDbcontext _dbContext;
-        IHttpClientFactory _httpClientFactory;    
+        //WebhookDbcontext dbContext;
+        //IHttpClientFactory httpClientFactory;    
 
-        public WebhookDispatcher(IHttpClientFactory httpClientFactory, WebhookDbcontext dbcontext /*, InMemoryWebhookSubscriptionRepository subscriptionRepository*/)
+        /*public WebhookDispatcher(IHttpClientFactory httpClientFactory, WebhookDbcontext dbcontext /)
         {
             //_subscriptionRepository = subscriptionRepository;
             //_httpClient= httpClient;
-            _dbContext = dbcontext;
-            _httpClientFactory = httpClientFactory;
-        }
-        public async void Dispatch<T>(string eventType, T data) {
+            dbContext = dbcontext;
+            httpClientFactory = httpClientFactory;
+        }*/
+
+        public async Task DispatchAsync<T>(string eventType, T data) {
             //var subscriptions = _subscriptionRepository.GetByEventType(eventType);
 
-            var subscriptions = _dbContext.subscriptions.Where(s => s.EventType == eventType).ToList() ;
+            var subscriptions = await dbContext.subscriptions.AsNoTracking().Where(s => s.EventType == eventType).ToListAsync() ;
             
-            foreach (var subscription in subscriptions) {
-                using var httpClient = _httpClientFactory.CreateClient();  //only one instance will be creted as this is a factory now and the scope will be managed as the for loop
+            foreach (WebhookSubscription subscription in subscriptions) {
+                using var httpClient = httpClientFactory.CreateClient();  //only one instance will be creted as this is a factory now and the scope will be managed as the for loop
                 var payload = new WebhookPayload<T> { 
                     Id = Guid.NewGuid(),
                     EventType = subscription.EventType,
-                    TimeStamp = DateTime.Now,
+                    TimeStamp = DateTime.UtcNow,
                     SubscriptionId= subscription.Id,
+                    Data = data
+                };
+
+                var jsonPayload = JsonSerializer.Serialize(payload);
+                try
+                {
+                    var response = await httpClient.PostAsJsonAsync(subscription.WebhookUrl, payload);
+                    var attempt = new WebhookDeliveryAttempt
+                    {
+                        Id = Guid.NewGuid(),
+                        SubscriptionId = subscription.Id,
+                        Payload = jsonPayload,
+                        ResponseStatusCode = (int)response.StatusCode,
+                        Success = response.IsSuccessStatusCode,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    dbContext.deliveryAttempts.Add(attempt);
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (Exception ex) {
+                    var attempt = new WebhookDeliveryAttempt
+                    {
+                        Id = Guid.NewGuid(),
+                        SubscriptionId = subscription.Id,
+                        Payload = jsonPayload,
+                        ResponseStatusCode = null,
+                        Success = false,
+                        Timestamp = DateTime.UtcNow
+                    };
+
+                    dbContext.deliveryAttempts.Add(attempt);
+                    await dbContext.SaveChangesAsync();
+                }
+                
+            }
+        }
+
+        public void Dispatch<T>(string eventType, T data)
+        {
+            //var subscriptions = _subscriptionRepository.GetByEventType(eventType);
+
+            var subscriptions = dbContext.subscriptions.Where(s => s.EventType == eventType).ToList();
+
+            foreach (WebhookSubscription subscription in subscriptions)
+            {
+                using var httpClient = httpClientFactory.CreateClient();  //only one instance will be creted as this is a factory now and the scope will be managed as the for loop
+                var payload = new WebhookPayload<T>
+                {
+                    Id = Guid.NewGuid(),
+                    EventType = subscription.EventType,
+                    TimeStamp = DateTime.UtcNow,
+                    SubscriptionId = subscription.Id,
                     Data = data
                 };
 
@@ -49,10 +102,11 @@ namespace Webhooks.Api.Services
                         Success = response.IsCompletedSuccessfully,
                         Timestamp = DateTime.UtcNow
                     };
-                    _dbContext.deliveryAttempts.Add(attempt);
-                    await _dbContext.SaveChangesAsync();
+                    dbContext.deliveryAttempts.Add(attempt);
+                    dbContext.SaveChanges();
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     var attempt = new WebhookDeliveryAttempt
                     {
                         Id = Guid.NewGuid(),
@@ -63,10 +117,10 @@ namespace Webhooks.Api.Services
                         Timestamp = DateTime.UtcNow
                     };
 
-                    _dbContext.deliveryAttempts.Add(attempt);
-                    await _dbContext.SaveChangesAsync();
+                    dbContext.deliveryAttempts.Add(attempt);
+                    dbContext.SaveChanges();
                 }
-                
+
             }
         }
     }
